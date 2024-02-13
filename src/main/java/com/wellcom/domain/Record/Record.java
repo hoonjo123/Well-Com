@@ -12,7 +12,7 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@Builder
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name ="record")
@@ -28,6 +28,7 @@ public class Record {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="sharingroom_id")
     private SharingRoom sharingroom;
+
 
     private String isWinner="N";
 }

@@ -6,6 +6,7 @@ import com.wellcom.domain.Member.Member;
 import com.wellcom.domain.Member.Repository.MemberRepository;
 import com.wellcom.domain.SharingRoom.Dto.SharingRoomCreateReqDto;
 import com.wellcom.domain.SharingRoom.Dto.SharingRoomCreateResDto;
+import com.wellcom.domain.SharingRoom.Dto.SharingRoomUpdateReqDto;
 import com.wellcom.domain.SharingRoom.Repository.SharingRoomRepository;
 import com.wellcom.domain.SharingRoom.SharingRoom;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Entity;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.List;
@@ -33,6 +35,10 @@ public class SharingRoomService {
         String email = authentication.getName();
 
         Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("not found email"));
+
+        if(member.isBlocked()){
+            throw new IllegalStateException("차단된 회원은 이용할 수 없습니다.");
+        }
 
         Item item = Item.builder()
                 .name(sharingRoomCreateReqDto.getItemName())
@@ -57,4 +63,29 @@ public class SharingRoomService {
     }
 
     //findAll : delYn이 N인 SharingRoom만 찾기
+
+    public void delete(Long id) {
+        SharingRoom sharingRoom = sharingRoomRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("SharingRoom not found with id: " + id));
+        sharingRoomRepository.delete(sharingRoom);
+    }
+
+    public SharingRoom update(Long id, SharingRoomUpdateReqDto updateReqDto) {
+        SharingRoom sharingRoom = sharingRoomRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("SharingRoom not found with id: " + id));
+
+        Item item = sharingRoom.getItem();
+        item.setName(updateReqDto.getItemName());
+        item.setImagePath(updateReqDto.getItemImagePath());
+
+        sharingRoom.setTitle(updateReqDto.getTitle());
+        sharingRoom.setContents(updateReqDto.getContents());
+        sharingRoom.setCntPeople(updateReqDto.getCntPeople());
+        // Item 객체를 업데이트한 후 다시 설정
+        sharingRoom.setItem(item);
+
+        return sharingRoomRepository.save(sharingRoom);
+    }
+
+
 }

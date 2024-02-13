@@ -55,7 +55,7 @@
           Important Links
         </h2>
 
-        <v-row justify="center">
+        <v-row justify="center">r
           <a
             v-for="(link, i) in importantLinks"
             :key="i"
